@@ -46,17 +46,67 @@ Tasks:
   - API authentication and rate limiting
   - Dutch political prompt engineering framework
   - Basic error handling and fallback responses
+  - User-configurable AI service settings implementation
 
 Dependencies: Project setup complete
 Deliverables:
   - Working NVIDIA NIM API integration
   - Dutch political analysis system
   - Response caching mechanism
+  - Configurable AI service settings system
 
 Quality Gates:
   - Successful API calls to nvidia/llama-3.1-nemotron-70b-instruct
   - Dutch political sentiment analysis working
   - Rate limiting prevents API abuse
+  - Users can configure custom API endpoints and keys
+```
+
+#### User-Configurable AI Settings
+```yaml
+Tasks:
+  - AI Service configuration UI implementation
+  - Settings persistence with secure API key storage
+  - Multiple AI provider support architecture
+  - Offline mode configuration options
+  - API endpoint validation and testing interface
+
+Detailed Implementation:
+  Settings Panel Features:
+    - Base URL configuration for custom AI endpoints
+    - API key secure input and storage
+    - Model selection dropdown (when supported by endpoint)
+    - Connection testing with validation feedback
+    - Offline mode toggle with local analysis fallback
+    - API rate limiting configuration
+    - Response timeout settings
+
+  Security Considerations:
+    - API keys encrypted in local storage
+    - Secure credential input fields (password-masked)
+    - Connection validation before saving settings
+    - Clear security warnings for custom endpoints
+
+  Provider Support:
+    - NVIDIA NIM (default)
+    - OpenAI API compatibility
+    - Custom endpoints with OpenAI-compatible format
+    - Local models (future enhancement)
+    - Offline analysis engine fallback
+
+Dependencies: NVIDIA NIM integration foundation complete
+Deliverables:
+  - User settings interface for AI configuration
+  - Secure API key management system
+  - Multiple AI provider support
+  - Connection testing and validation system
+
+Quality Gates:
+  - Users can switch between different AI providers seamlessly
+  - API keys stored securely and never logged or exposed
+  - Invalid configurations provide clear error messages
+  - Settings persist across game sessions
+  - Offline mode works when AI service unavailable
 ```
 
 ### 1.2 Core Game Systems (Weeks 3-6)

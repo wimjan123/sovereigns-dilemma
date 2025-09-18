@@ -1,0 +1,21 @@
+{
+    "name": "SovereignsDilemma.AI",
+    "rootNamespace": "SovereignsDilemma.AI",
+    "references": [
+        "SovereignsDilemma.Core",
+        "Unity.Collections",
+        "Unity.Jobs",
+        "VContainer"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [
+        "System.Net.Http.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

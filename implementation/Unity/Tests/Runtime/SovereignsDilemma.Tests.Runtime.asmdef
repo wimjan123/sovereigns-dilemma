@@ -1,0 +1,32 @@
+{
+    "name": "SovereignsDilemma.Tests.Runtime",
+    "rootNamespace": "SovereignsDilemma.Tests.Runtime",
+    "references": [
+        "SovereignsDilemma.Core",
+        "SovereignsDilemma.AI",
+        "SovereignsDilemma.Political",
+        "SovereignsDilemma.Testing",
+        "UnityEngine.TestRunner",
+        "Unity.PerformanceTesting"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "System.Net.Http.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.test-framework.performance",
+            "expression": "1.0.0",
+            "define": "UNITY_PERFORMANCE_TESTS"
+        }
+    ],
+    "noEngineReferences": false
+}

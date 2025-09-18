@@ -1,0 +1,261 @@
+name: Unity CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  UNITY_VERSION: 6000.0.23f1
+  PROJECT_PATH: implementation/Unity
+
+jobs:
+  unity-tests:
+    name: Unity Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+
+    - name: Cache Unity Library
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.PROJECT_PATH }}/Library
+        key: Library-${{ hashFiles('implementation/Unity/ProjectSettings/**') }}
+        restore-keys: |
+          Library-
+
+    - name: Run Unity Tests
+      uses: game-ci/unity-test-runner@v4
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      with:
+        projectPath: ${{ env.PROJECT_PATH }}
+        unityVersion: ${{ env.UNITY_VERSION }}
+        testMode: all
+        artifactsPath: test-results
+        githubToken: ${{ secrets.GITHUB_TOKEN }}
+        checkName: Unity Test Results
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: unity-test-results
+        path: test-results
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    needs: unity-tests
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+
+    - name: Cache Unity Library
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.PROJECT_PATH }}/Library
+        key: Library-Windows-${{ hashFiles('implementation/Unity/ProjectSettings/**') }}
+        restore-keys: |
+          Library-Windows-
+          Library-
+
+    - name: Build Unity Project
+      uses: game-ci/unity-builder@v4
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      with:
+        projectPath: ${{ env.PROJECT_PATH }}
+        unityVersion: ${{ env.UNITY_VERSION }}
+        targetPlatform: StandaloneWindows64
+        buildName: SovereignsDilemma
+        buildsPath: builds
+
+    - name: Upload Windows build
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-build
+        path: builds/StandaloneWindows64
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    needs: unity-tests
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+
+    - name: Cache Unity Library
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.PROJECT_PATH }}/Library
+        key: Library-Linux-${{ hashFiles('implementation/Unity/ProjectSettings/**') }}
+        restore-keys: |
+          Library-Linux-
+          Library-
+
+    - name: Build Unity Project
+      uses: game-ci/unity-builder@v4
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      with:
+        projectPath: ${{ env.PROJECT_PATH }}
+        unityVersion: ${{ env.UNITY_VERSION }}
+        targetPlatform: StandaloneLinux64
+        buildName: SovereignsDilemma
+        buildsPath: builds
+
+    - name: Upload Linux build
+      uses: actions/upload-artifact@v3
+      with:
+        name: linux-build
+        path: builds/StandaloneLinux64
+
+  performance-benchmarks:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: unity-tests
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+
+    - name: Cache Unity Library
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.PROJECT_PATH }}/Library
+        key: Library-Perf-${{ hashFiles('implementation/Unity/ProjectSettings/**') }}
+        restore-keys: |
+          Library-Perf-
+          Library-
+
+    - name: Run Performance Tests
+      uses: game-ci/unity-test-runner@v4
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      with:
+        projectPath: ${{ env.PROJECT_PATH }}
+        unityVersion: ${{ env.UNITY_VERSION }}
+        testMode: all
+        artifactsPath: performance-results
+        githubToken: ${{ secrets.GITHUB_TOKEN }}
+        checkName: Performance Test Results
+        customParameters: -testCategory "Performance"
+
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-results
+        path: performance-results
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Run Semgrep
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: >-
+          p/security-audit
+          p/secrets
+          p/csharp
+        generateSarif: "1"
+
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: semgrep.sarif
+      if: always()
+
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.PROJECT_PATH }}
+
+    - name: Run code analysis
+      run: |
+        dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+        dotnet format ${{ env.PROJECT_PATH }} --verify-no-changes --verbosity diagnostic
+
+    - name: Run security analysis
+      uses: security-code-scan/security-code-scan-action@main
+      with:
+        project-path: ${{ env.PROJECT_PATH }}
+
+  deployment:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-linux, performance-benchmarks]
+    if: github.ref == 'refs/heads/develop'
+
+    environment:
+      name: staging
+      url: https://staging.sovereignsdilemma.com
+
+    steps:
+    - name: Download Windows build
+      uses: actions/download-artifact@v3
+      with:
+        name: windows-build
+        path: builds/windows
+
+    - name: Download Linux build
+      uses: actions/download-artifact@v3
+      with:
+        name: linux-build
+        path: builds/linux
+
+    - name: Deploy to staging environment
+      run: |
+        echo "Deploying to staging environment..."
+        # Deployment logic would go here
+
+    - name: Run integration tests
+      run: |
+        echo "Running integration tests..."
+        # Integration test logic would go here
+
+    - name: Notify deployment status
+      uses: 8398a7/action-slack@v3
+      if: always()
+      with:
+        status: ${{ job.status }}
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        text: "Staging deployment completed with status: ${{ job.status }}"

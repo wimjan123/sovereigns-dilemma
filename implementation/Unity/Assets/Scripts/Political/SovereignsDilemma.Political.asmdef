@@ -1,0 +1,23 @@
+{
+    "name": "SovereignsDilemma.Political",
+    "rootNamespace": "SovereignsDilemma.Political",
+    "references": [
+        "SovereignsDilemma.Core",
+        "SovereignsDilemma.Testing",
+        "Unity.Entities",
+        "Unity.Collections",
+        "Unity.Jobs",
+        "Unity.Burst",
+        "Unity.Mathematics",
+        "VContainer"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

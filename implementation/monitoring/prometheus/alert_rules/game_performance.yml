@@ -1,0 +1,254 @@
+# Game Performance Alert Rules for The Sovereign's Dilemma
+# Critical performance monitoring and alerting
+
+groups:
+  - name: game_performance
+    rules:
+      # Frame Rate Alerts
+      - alert: CriticalFrameRateDrop
+        expr: avg_over_time(game_fps[5m]) < 30
+        for: 2m
+        labels:
+          severity: critical
+          team: game_engine
+          component: performance
+        annotations:
+          summary: "Critical frame rate degradation detected"
+          description: "Game FPS has dropped to {{ $value | printf \"%.1f\" }} over the last 5 minutes, below critical threshold of 30 FPS"
+          impact: "Severe user experience degradation"
+          runbook_url: "https://docs.sovereignsdilemma.com/runbooks/performance/fps-degradation"
+
+      - alert: FrameRateWarning
+        expr: avg_over_time(game_fps[5m]) < 45
+        for: 5m
+        labels:
+          severity: warning
+          team: game_engine
+          component: performance
+        annotations:
+          summary: "Frame rate below optimal threshold"
+          description: "Game FPS is {{ $value | printf \"%.1f\" }}, below warning threshold of 45 FPS"
+          impact: "Noticeable performance impact for users"
+
+      # Memory Usage Alerts
+      - alert: CriticalMemoryUsage
+        expr: game_memory_total_bytes > 1200000000  # 1.2GB
+        for: 1m
+        labels:
+          severity: critical
+          team: game_engine
+          component: memory
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Game memory usage is {{ $value | humanizeBytes }}, exceeding critical threshold"
+          impact: "Risk of out-of-memory crashes"
+          runbook_url: "https://docs.sovereignsdilemma.com/runbooks/memory/high-usage"
+
+      - alert: MemoryPressure
+        expr: game_memory_total_bytes > 1000000000  # 1GB
+        for: 2m
+        labels:
+          severity: warning
+          team: game_engine
+          component: memory
+        annotations:
+          summary: "High memory usage detected"
+          description: "Game memory usage is {{ $value | humanizeBytes }}, approaching limits"
+          impact: "Performance degradation likely"
+
+      - alert: MemoryLeak
+        expr: increase(game_memory_total_bytes[30m]) > 200000000  # 200MB increase in 30min
+        for: 5m
+        labels:
+          severity: warning
+          team: game_engine
+          component: memory
+        annotations:
+          summary: "Potential memory leak detected"
+          description: "Memory usage increased by {{ $value | humanizeBytes }} over the last 30 minutes"
+          impact: "Gradual performance degradation"
+
+      # Voter Simulation Performance
+      - alert: VoterSimulationStall
+        expr: rate(game_voter_updates_total[5m]) == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: simulation
+          component: voters
+        annotations:
+          summary: "Voter simulation has stalled"
+          description: "No voter updates processed in the last 5 minutes"
+          impact: "Game simulation completely frozen"
+          runbook_url: "https://docs.sovereignsdilemma.com/runbooks/simulation/voter-stall"
+
+      - alert: VoterUpdatePerformance
+        expr: avg_over_time(game_voter_update_duration_seconds[5m]) > 0.1
+        for: 3m
+        labels:
+          severity: warning
+          team: simulation
+          component: voters
+        annotations:
+          summary: "Voter update performance degraded"
+          description: "Average voter update time is {{ $value | printf \"%.3f\" }}s, above 100ms threshold"
+          impact: "Simulation lag affecting user experience"
+
+      - alert: LowVoterCount
+        expr: game_active_voters < 8000
+        for: 5m
+        labels:
+          severity: warning
+          team: simulation
+          component: voters
+        annotations:
+          summary: "Active voter count below expected range"
+          description: "Only {{ $value }} active voters, below minimum of 8000"
+          impact: "Reduced simulation complexity and realism"
+
+      # Unity Engine Specific Alerts
+      - alert: UnityGCPressure
+        expr: rate(unity_gc_collection_count[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          team: game_engine
+          component: unity
+        annotations:
+          summary: "Excessive garbage collection activity"
+          description: "{{ $value | printf \"%.1f\" }} GC collections per second over 5 minutes"
+          impact: "Frame stuttering and performance spikes"
+
+      - alert: UnityRenderingIssues
+        expr: unity_dropped_frames_total > 100
+        for: 1m
+        labels:
+          severity: warning
+          team: game_engine
+          component: rendering
+        annotations:
+          summary: "High number of dropped frames"
+          description: "{{ $value }} frames dropped, indicating rendering issues"
+          impact: "Visual stuttering and poor user experience"
+
+      # Load Time Performance
+      - alert: SlowGameStartup
+        expr: game_startup_duration_seconds > 30
+        for: 0s
+        labels:
+          severity: warning
+          team: game_engine
+          component: loading
+        annotations:
+          summary: "Game startup time exceeded threshold"
+          description: "Game took {{ $value | printf \"%.1f\" }}s to start, above 30s threshold"
+          impact: "Poor first user experience"
+
+      # Performance Degradation Trends
+      - alert: PerformanceDegradationTrend
+        expr: |
+          (
+            avg_over_time(game_fps[1h]) -
+            avg_over_time(game_fps[1h] offset 1h)
+          ) < -5
+        for: 10m
+        labels:
+          severity: warning
+          team: game_engine
+          component: performance
+        annotations:
+          summary: "Performance degradation trend detected"
+          description: "FPS has decreased by {{ $value | printf \"%.1f\" }} compared to previous hour"
+          impact: "Gradual performance decline"
+
+  - name: game_reliability
+    rules:
+      # Crash Detection
+      - alert: GameCrashes
+        expr: increase(game_crashes_total[5m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          team: game_engine
+          component: stability
+        annotations:
+          summary: "Game crashes detected"
+          description: "{{ $value }} game crashes in the last 5 minutes"
+          impact: "Users experiencing crashes and data loss"
+          runbook_url: "https://docs.sovereignsdilemma.com/runbooks/stability/crashes"
+
+      - alert: HighCrashRate
+        expr: rate(game_crashes_total[1h]) > 0.01  # More than 1 crash per 100 sessions per hour
+        for: 5m
+        labels:
+          severity: warning
+          team: game_engine
+          component: stability
+        annotations:
+          summary: "High crash rate detected"
+          description: "Crash rate is {{ $value | printf \"%.4f\" }} per session per hour"
+          impact: "Stability issues affecting user retention"
+
+      # Error Rate Monitoring
+      - alert: HighErrorRate
+        expr: |
+          (
+            rate(game_errors_total[5m]) /
+            rate(game_operations_total[5m])
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          team: game_engine
+          component: reliability
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | printf \"%.2%\" }}, above 5% threshold"
+          impact: "Users experiencing frequent errors"
+
+      # Session Health
+      - alert: SessionDurationAnomalies
+        expr: |
+          avg_over_time(game_session_duration_seconds[1h]) < 300 or
+          avg_over_time(game_session_duration_seconds[1h]) > 7200
+        for: 10m
+        labels:
+          severity: warning
+          team: product
+          component: engagement
+        annotations:
+          summary: "Unusual session duration patterns"
+          description: "Average session duration is {{ $value | printf \"%.0f\" }}s, outside normal range"
+          impact: "Potential user engagement issues"
+
+  - name: performance_slo_violations
+    rules:
+      # SLO Violation Tracking
+      - alert: FPSSLOViolation
+        expr: |
+          (
+            avg_over_time(game_fps[5m]) < 60
+          ) and (
+            avg_over_time(game_fps[5m]) >= 45
+          )
+        for: 1m
+        labels:
+          severity: info
+          team: sre
+          component: slo
+        annotations:
+          summary: "FPS SLO violation (60 FPS target)"
+          description: "FPS {{ $value | printf \"%.1f\" }} below 60 FPS target but above critical threshold"
+          impact: "SLO budget consumption"
+
+      - alert: MemorySLOViolation
+        expr: game_memory_total_bytes > 800000000  # 800MB soft limit
+        for: 5m
+        labels:
+          severity: info
+          team: sre
+          component: slo
+        annotations:
+          summary: "Memory usage SLO violation"
+          description: "Memory usage {{ $value | humanizeBytes }} above 800MB soft limit"
+          impact: "SLO budget consumption"

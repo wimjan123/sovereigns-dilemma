@@ -1,0 +1,298 @@
+{
+  "timestamp": "2025-09-18T21:16:57.012618",
+  "fps_samples": [
+    {
+      "timestamp": 1758223017.0130074,
+      "fps": 48.37215248245211
+    }
+  ],
+  "memory_samples": [
+    {
+      "timestamp": 1758223018.0134196,
+      "used_gb": 6.146289825439453,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223020.0140278,
+      "used_gb": 6.131031036376953,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223022.0145028,
+      "used_gb": 6.123943328857422,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223024.0152843,
+      "used_gb": 6.120716094970703,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223026.0160968,
+      "used_gb": 6.118312835693359,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223028.0173812,
+      "used_gb": 6.124351501464844,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223030.0182774,
+      "used_gb": 6.145732879638672,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223032.0190635,
+      "used_gb": 6.1378021240234375,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223034.0196881,
+      "used_gb": 6.10589599609375,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223036.020327,
+      "used_gb": 6.132843017578125,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223038.0210838,
+      "used_gb": 6.129478454589844,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223040.0219643,
+      "used_gb": 6.1198272705078125,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223042.022743,
+      "used_gb": 6.111560821533203,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223044.0234146,
+      "used_gb": 6.1119537353515625,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223046.023961,
+      "used_gb": 6.145782470703125,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223048.0246732,
+      "used_gb": 6.125850677490234,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223050.025367,
+      "used_gb": 6.138500213623047,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223052.0260754,
+      "used_gb": 6.1282958984375,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223054.026722,
+      "used_gb": 6.130977630615234,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223056.0275135,
+      "used_gb": 6.128223419189453,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223058.0283766,
+      "used_gb": 6.126857757568359,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223060.029133,
+      "used_gb": 6.127819061279297,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223062.029794,
+      "used_gb": 6.127819061279297,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223064.0309954,
+      "used_gb": 6.121768951416016,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223066.03188,
+      "used_gb": 6.122089385986328,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223068.032545,
+      "used_gb": 6.122810363769531,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223070.033091,
+      "used_gb": 6.130634307861328,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223072.033731,
+      "used_gb": 6.120311737060547,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223074.0343544,
+      "used_gb": 6.119396209716797,
+      "percent": 11.5
+    },
+    {
+      "timestamp": 1758223076.0352886,
+      "used_gb": 6.121509552001953,
+      "percent": 11.5
+    }
+  ],
+  "ai_response_times": [],
+  "db_query_times": [],
+  "load_time": null,
+  "cpu_usage": [
+    {
+      "timestamp": 1758223018.0133185,
+      "usage_percent": 6.1
+    },
+    {
+      "timestamp": 1758223020.0139446,
+      "usage_percent": 9.0
+    },
+    {
+      "timestamp": 1758223022.0144367,
+      "usage_percent": 6.6
+    },
+    {
+      "timestamp": 1758223024.0150712,
+      "usage_percent": 7.7
+    },
+    {
+      "timestamp": 1758223026.016028,
+      "usage_percent": 8.0
+    },
+    {
+      "timestamp": 1758223028.017062,
+      "usage_percent": 7.9
+    },
+    {
+      "timestamp": 1758223030.0180194,
+      "usage_percent": 7.8
+    },
+    {
+      "timestamp": 1758223032.0188708,
+      "usage_percent": 7.0
+    },
+    {
+      "timestamp": 1758223034.0196187,
+      "usage_percent": 7.5
+    },
+    {
+      "timestamp": 1758223036.020244,
+      "usage_percent": 8.5
+    },
+    {
+      "timestamp": 1758223038.0209916,
+      "usage_percent": 7.0
+    },
+    {
+      "timestamp": 1758223040.0218453,
+      "usage_percent": 6.6
+    },
+    {
+      "timestamp": 1758223042.0226288,
+      "usage_percent": 8.9
+    },
+    {
+      "timestamp": 1758223044.0233278,
+      "usage_percent": 8.8
+    },
+    {
+      "timestamp": 1758223046.0238936,
+      "usage_percent": 7.2
+    },
+    {
+      "timestamp": 1758223048.0245202,
+      "usage_percent": 7.3
+    },
+    {
+      "timestamp": 1758223050.0252275,
+      "usage_percent": 7.3
+    },
+    {
+      "timestamp": 1758223052.0259511,
+      "usage_percent": 6.6
+    },
+    {
+      "timestamp": 1758223054.0266294,
+      "usage_percent": 6.9
+    },
+    {
+      "timestamp": 1758223056.0273623,
+      "usage_percent": 6.8
+    },
+    {
+      "timestamp": 1758223058.0281808,
+      "usage_percent": 9.2
+    },
+    {
+      "timestamp": 1758223060.0290165,
+      "usage_percent": 6.8
+    },
+    {
+      "timestamp": 1758223062.0296865,
+      "usage_percent": 6.3
+    },
+    {
+      "timestamp": 1758223064.0307205,
+      "usage_percent": 8.9
+    },
+    {
+      "timestamp": 1758223066.0316715,
+      "usage_percent": 6.9
+    },
+    {
+      "timestamp": 1758223068.0324237,
+      "usage_percent": 7.8
+    },
+    {
+      "timestamp": 1758223070.0330248,
+      "usage_percent": 6.9
+    },
+    {
+      "timestamp": 1758223072.0336025,
+      "usage_percent": 6.8
+    },
+    {
+      "timestamp": 1758223074.034259,
+      "usage_percent": 10.1
+    },
+    {
+      "timestamp": 1758223076.0351484,
+      "usage_percent": 6.9
+    }
+  ],
+  "gpu_usage": [],
+  "fps_stats": {
+    "avg": 48.37215248245211,
+    "min": 48.37215248245211,
+    "max": 48.37215248245211,
+    "samples": 1
+  },
+  "memory_stats": {
+    "avg_gb": 6.126612854003906,
+    "peak_gb": 6.146289825439453,
+    "min_gb": 6.10589599609375
+  }
+}

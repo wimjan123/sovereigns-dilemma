@@ -1,0 +1,10 @@
+{
+  "targets": {
+    "fps": 60,
+    "memory_gb": 1.0,
+    "ai_response_ms": 2000,
+    "db_query_ms": 100
+  },
+  "test_duration": 60,
+  "sample_size": 100
+}

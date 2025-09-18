@@ -1,0 +1,286 @@
+# AI Service Alert Rules for The Sovereign's Dilemma
+# NVIDIA NIM and AI integration monitoring
+
+groups:
+  - name: ai_service_health
+    rules:
+      # Service Availability
+      - alert: AIServiceDown
+        expr: up{job="ai-service"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          team: ai_integration
+          component: nvidia_nim
+        annotations:
+          summary: "AI service is completely down"
+          description: "NVIDIA NIM AI service has been unreachable for 30 seconds"
+          impact: "Complete loss of AI functionality"
+          runbook_url: "https://docs.sovereignsdilemma.com/runbooks/ai/service-down"
+
+      - alert: AIServiceDegraded
+        expr: |
+          (
+            rate(ai_requests_total{status!="200"}[5m]) /
+            rate(ai_requests_total[5m])
+          ) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          team: ai_integration
+          component: nvidia_nim
+        annotations:
+          summary: "AI service experiencing high error rate"
+          description: "AI service error rate is {{ $value | printf \"%.2%\" }}, above 10% threshold"
+          impact: "Degraded AI responses affecting user experience"
+
+      # Response Time Monitoring
+      - alert: AIResponseTimeHigh
+        expr: histogram_quantile(0.95, rate(ai_request_duration_seconds_bucket[5m])) > 5
+        for: 3m
+        labels:
+          severity: warning
+          team: ai_integration
+          component: performance
+        annotations:
+          summary: "AI service response time high"
+          description: "95th percentile AI response time is {{ $value | printf \"%.2f\" }}s, above 5s threshold"
+          impact: "Slow AI responses causing user experience degradation"
+
+      - alert: AIResponseTimeCritical
+        expr: histogram_quantile(0.95, rate(ai_request_duration_seconds_bucket[5m])) > 10
+        for: 1m
+        labels:
+          severity: critical
+          team: ai_integration
+          component: performance
+        annotations:
+          summary: "AI service response time critical"
+          description: "95th percentile AI response time is {{ $value | printf \"%.2f\" }}s, above 10s critical threshold"
+          impact: "Severe user experience degradation due to slow AI"
+          runbook_url: "https://docs.sovereignsdilemma.com/runbooks/ai/high-latency"
+
+      # Circuit Breaker Monitoring
+      - alert: AICircuitBreakerOpen
+        expr: ai_circuit_breaker_state == 1
+        for: 30s
+        labels:
+          severity: warning
+          team: ai_integration
+          component: circuit_breaker
+        annotations:
+          summary: "AI service circuit breaker is open"
+          description: "Circuit breaker activated due to AI service failures"
+          impact: "AI requests being rejected, falling back to cached responses"
+          runbook_url: "https://docs.sovereignsdilemma.com/runbooks/ai/circuit-breaker"
+
+      - alert: AICircuitBreakerFrequentTrips
+        expr: increase(ai_circuit_breaker_trips_total[1h]) > 3
+        for: 5m
+        labels:
+          severity: warning
+          team: ai_integration
+          component: circuit_breaker
+        annotations:
+          summary: "AI circuit breaker tripping frequently"
+          description: "Circuit breaker has tripped {{ $value }} times in the last hour"
+          impact: "Unstable AI service causing intermittent failures"
+
+      # Rate Limiting and Quotas
+      - alert: AIRateLimitHit
+        expr: increase(ai_rate_limit_hits_total[5m]) > 0
+        for: 0s
+        labels:
+          severity: warning
+          team: ai_integration
+          component: rate_limiting
+        annotations:
+          summary: "AI service rate limit hit"
+          description: "{{ $value }} rate limit violations in the last 5 minutes"
+          impact: "AI requests being throttled"
+
+      - alert: AIQuotaExhaustion
+        expr: ai_quota_remaining_percentage < 10
+        for: 1m
+        labels:
+          severity: critical
+          team: ai_integration
+          component: quota
+        annotations:
+          summary: "AI service quota nearly exhausted"
+          description: "Only {{ $value | printf \"%.1f\" }}% of AI quota remaining"
+          impact: "Risk of complete AI service cutoff"
+          runbook_url: "https://docs.sovereignsdilemma.com/runbooks/ai/quota-exhaustion"
+
+      # Cache Performance
+      - alert: AICacheHitRateLow
+        expr: |
+          (
+            rate(ai_cache_hits_total[5m]) /
+            (rate(ai_cache_hits_total[5m]) + rate(ai_cache_misses_total[5m]))
+          ) < 0.4
+        for: 5m
+        labels:
+          severity: warning
+          team: ai_integration
+          component: cache
+        annotations:
+          summary: "AI cache hit rate low"
+          description: "Cache hit rate is {{ $value | printf \"%.2%\" }}, below 40% threshold"
+          impact: "Increased AI API usage and costs"
+
+      - alert: AICacheErrors
+        expr: rate(ai_cache_errors_total[5m]) > 1
+        for: 2m
+        labels:
+          severity: warning
+          team: ai_integration
+          component: cache
+        annotations:
+          summary: "AI cache experiencing errors"
+          description: "{{ $value | printf \"%.1f\" }} cache errors per second"
+          impact: "Cache functionality degraded"
+
+  - name: ai_business_metrics
+    rules:
+      # Content Generation Quality
+      - alert: AIContentQualityDegradation
+        expr: avg_over_time(ai_content_quality_score[1h]) < 0.7
+        for: 10m
+        labels:
+          severity: warning
+          team: ai_integration
+          component: quality
+        annotations:
+          summary: "AI content quality degraded"
+          description: "Average content quality score is {{ $value | printf \"%.2f\" }}, below 0.7 threshold"
+          impact: "Poor quality AI-generated content affecting user experience"
+
+      - alert: AIContentGenerationStalled
+        expr: rate(ai_content_generated_total[5m]) == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: ai_integration
+          component: generation
+        annotations:
+          summary: "AI content generation has stalled"
+          description: "No AI content generated in the last 5 minutes"
+          impact: "No new political posts or responses being generated"
+          runbook_url: "https://docs.sovereignsdilemma.com/runbooks/ai/generation-stalled"
+
+      # Political Analysis Accuracy
+      - alert: PoliticalAnalysisAnomalies
+        expr: |
+          abs(
+            avg_over_time(ai_political_sentiment_average[1h]) -
+            avg_over_time(ai_political_sentiment_average[1h] offset 1h)
+          ) > 0.3
+        for: 15m
+        labels:
+          severity: warning
+          team: ai_integration
+          component: political_analysis
+        annotations:
+          summary: "Unusual political sentiment analysis patterns"
+          description: "Political sentiment analysis showing {{ $value | printf \"%.2f\" }} deviation from previous hour"
+          impact: "Potential bias or drift in political analysis"
+
+      # User Engagement with AI Content
+      - alert: LowAIContentEngagement
+        expr: |
+          (
+            rate(ai_content_interactions_total[1h]) /
+            rate(ai_content_generated_total[1h])
+          ) < 0.1
+        for: 30m
+        labels:
+          severity: warning
+          team: product
+          component: ai_engagement
+        annotations:
+          summary: "Low user engagement with AI content"
+          description: "AI content engagement rate is {{ $value | printf \"%.2%\" }}, below 10%"
+          impact: "AI-generated content not resonating with users"
+
+  - name: ai_cost_monitoring
+    rules:
+      # Cost Control
+      - alert: AIUsageCostHigh
+        expr: ai_daily_cost_estimate > 100  # $100 per day threshold
+        for: 10m
+        labels:
+          severity: warning
+          team: finance
+          component: cost_control
+        annotations:
+          summary: "AI service daily cost estimate high"
+          description: "Estimated daily AI cost is ${{ $value | printf \"%.2f\" }}, above $100 threshold"
+          impact: "Higher than expected AI service costs"
+
+      - alert: AIUsageSpike
+        expr: |
+          rate(ai_requests_total[5m]) >
+          (avg_over_time(rate(ai_requests_total[5m])[1h]) * 3)
+        for: 5m
+        labels:
+          severity: warning
+          team: ai_integration
+          component: usage
+        annotations:
+          summary: "Unusual spike in AI service usage"
+          description: "AI request rate {{ $value | printf \"%.1f\" }}/sec is 3x higher than hourly average"
+          impact: "Potential cost spike or system abuse"
+
+      # Efficiency Monitoring
+      - alert: AIBatchingEfficiencyLow
+        expr: avg_over_time(ai_batch_size[1h]) < 5
+        for: 30m
+        labels:
+          severity: warning
+          team: ai_integration
+          component: efficiency
+        annotations:
+          summary: "AI request batching efficiency low"
+          description: "Average batch size is {{ $value | printf \"%.1f\" }}, below efficient threshold"
+          impact: "Inefficient AI API usage and higher costs"
+
+  - name: ai_fallback_system
+    rules:
+      # Offline Mode Activation
+      - alert: OfflineModeActivated
+        expr: ai_offline_mode_active == 1
+        for: 1m
+        labels:
+          severity: info
+          team: ai_integration
+          component: offline_mode
+        annotations:
+          summary: "AI offline mode activated"
+          description: "System switched to offline AI mode due to service unavailability"
+          impact: "Reduced AI functionality, using cached responses"
+
+      - alert: OfflineModeExtended
+        expr: ai_offline_mode_active == 1
+        for: 30m
+        labels:
+          severity: warning
+          team: ai_integration
+          component: offline_mode
+        annotations:
+          summary: "Extended AI offline mode operation"
+          description: "System has been in offline mode for over 30 minutes"
+          impact: "Prolonged reduced AI functionality"
+
+      # Fallback Quality
+      - alert: FallbackResponseQualityLow
+        expr: avg_over_time(ai_fallback_response_quality[1h]) < 0.5
+        for: 10m
+        labels:
+          severity: warning
+          team: ai_integration
+          component: fallback
+        annotations:
+          summary: "AI fallback response quality low"
+          description: "Fallback response quality score is {{ $value | printf \"%.2f\" }}, below 0.5"
+          impact: "Poor quality fallback responses during AI service issues"

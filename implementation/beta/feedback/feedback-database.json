@@ -1,0 +1,28 @@
+{
+  "system_info": {
+    "created": "2025-09-18T18:01:51Z",
+    "version": "1.0",
+    "last_updated": "2025-09-18T18:01:51Z"
+  },
+  "feedback_stats": {
+    "total_submissions": 0,
+    "bug_reports": 0,
+    "feature_requests": 0,
+    "usability_feedback": 0,
+    "political_accuracy": 0,
+    "performance_reports": 0,
+    "processed_count": 0,
+    "implemented_count": 0
+  },
+  "categories": {
+    "critical": [],
+    "high": [],
+    "medium": [],
+    "low": []
+  },
+  "trends": {
+    "common_issues": {},
+    "feature_popularity": {},
+    "satisfaction_scores": []
+  }
+}

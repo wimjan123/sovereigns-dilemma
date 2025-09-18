@@ -1,0 +1,48 @@
+{
+  "ProjectSettings": {
+    "Quality": {
+      "names": ["Performance", "Balanced", "Quality"],
+      "defaultLevel": 1,
+      "Performance": {
+        "pixelLightCount": 1,
+        "shadows": 1,
+        "shadowResolution": 1,
+        "shadowDistance": 20,
+        "antiAliasing": 0,
+        "anisotropicFiltering": 0,
+        "vSyncCount": 0,
+        "lodBias": 0.7,
+        "maximumLODLevel": 1
+      },
+      "Balanced": {
+        "pixelLightCount": 2,
+        "shadows": 2,
+        "shadowResolution": 2,
+        "shadowDistance": 50,
+        "antiAliasing": 2,
+        "anisotropicFiltering": 1,
+        "vSyncCount": 1,
+        "lodBias": 1.0,
+        "maximumLODLevel": 0
+      }
+    },
+    "Graphics": {
+      "renderPipeline": "Built-in",
+      "batchingSettings": {
+        "staticBatching": true,
+        "dynamicBatching": true,
+        "gpuInstancing": true
+      },
+      "lightmapping": {
+        "lightmapMode": "Baked",
+        "compressionQuality": "Normal"
+      }
+    },
+    "Player": {
+      "targetFrameRate": 60,
+      "runInBackground": true,
+      "captureSingleScreen": false,
+      "gpuSkinning": true
+    }
+  }
+}

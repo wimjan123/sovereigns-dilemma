@@ -1,0 +1,24 @@
+{
+  "program_info": {
+    "start_date": "2025-09-18T18:01:45Z",
+    "target_testers": 50,
+    "current_phase": "recruitment",
+    "last_updated": "2025-09-18T18:01:45Z"
+  },
+  "recruitment_stats": {
+    "applications_received": 0,
+    "applications_approved": 0,
+    "applications_rejected": 0,
+    "applications_pending": 0,
+    "target_demographics_met": {
+      "political_enthusiasts": 0,
+      "strategy_gamers": 0,
+      "dutch_expatriates": 0,
+      "political_students": 0,
+      "political_experts": 0,
+      "game_industry": 0
+    }
+  },
+  "testers": [],
+  "waitlist": []
+}

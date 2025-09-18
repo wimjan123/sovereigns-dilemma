@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beta Feedback Dashboard - The Sovereign's Dilemma</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        .header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .dashboard {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .priority-bar {
+            display: flex;
+            height: 40px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .priority-critical { background-color: #dc3545; }
+        .priority-high { background-color: #fd7e14; }
+        .priority-medium { background-color: #ffc107; }
+        .priority-low { background-color: #28a745; }
+        .feedback-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .feedback-item {
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .feedback-item:last-child {
+            border-bottom: none;
+        }
+        .feedback-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .feedback-meta {
+            font-size: 0.8em;
+            color: #6c757d;
+        }
+        .priority-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            color: white;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+        .satisfaction-chart {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .satisfaction-bar {
+            height: 100px;
+            background: linear-gradient(to top, #dc3545, #ffc107, #28a745);
+            border-radius: 4px;
+            position: relative;
+            display: flex;
+            align-items: end;
+            justify-content: center;
+        }
+        .satisfaction-value {
+            color: white;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .satisfaction-label {
+            text-align: center;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Beta Feedback Dashboard</h1>
+        <p>The Sovereign's Dilemma - Real-time feedback analytics</p>
+    </div>
+
+    <div class="dashboard">
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value" id="totalFeedback">247</div>
+                <div class="metric-label">Total Feedback</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="bugReports">89</div>
+                <div class="metric-label">Bug Reports</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="featureRequests">124</div>
+                <div class="metric-label">Feature Requests</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="satisfactionScore">7.2</div>
+                <div class="metric-label">Avg Satisfaction</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>Priority Distribution</h3>
+            <div class="priority-bar">
+                <div class="priority-critical" style="flex: 12;"></div>
+                <div class="priority-high" style="flex: 28;"></div>
+                <div class="priority-medium" style="flex: 45;"></div>
+                <div class="priority-low" style="flex: 15;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8em;">
+                <span>🔴 Critical (12%)</span>
+                <span>🟠 High (28%)</span>
+                <span>🟡 Medium (45%)</span>
+                <span>🟢 Low (15%)</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="chart-container">
+                <h3>Recent Feedback</h3>
+                <div class="feedback-list">
+                    <div class="feedback-item">
+                        <div>
+                            <div class="feedback-title">Game crashes when opening AI settings</div>
+                            <div class="feedback-meta">Bug Report • 2 hours ago</div>
+                        </div>
+                        <span class="priority-badge priority-critical">Critical</span>
+                    </div>
+                    <div class="feedback-item">
+                        <div>
+                            <div class="feedback-title">Add vote prediction analytics</div>
+                            <div class="feedback-meta">Feature Request • 5 hours ago</div>
+                        </div>
+                        <span class="priority-badge priority-high">High</span>
+                    </div>
+                    <div class="feedback-item">
+                        <div>
+                            <div class="feedback-title">UI feels cluttered on smaller screens</div>
+                            <div class="feedback-meta">Usability • 8 hours ago</div>
+                        </div>
+                        <span class="priority-badge priority-medium">Medium</span>
+                    </div>
+                    <div class="feedback-item">
+                        <div>
+                            <div class="feedback-title">Political accuracy is impressive</div>
+                            <div class="feedback-meta">General Feedback • 1 day ago</div>
+                        </div>
+                        <span class="priority-badge priority-low">Low</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Satisfaction Ratings</h3>
+                <div class="satisfaction-chart">
+                    <div>
+                        <div class="satisfaction-bar">
+                            <div class="satisfaction-value">7.2</div>
+                        </div>
+                        <div class="satisfaction-label">Overall</div>
+                    </div>
+                    <div>
+                        <div class="satisfaction-bar">
+                            <div class="satisfaction-value">8.1</div>
+                        </div>
+                        <div class="satisfaction-label">Political</div>
+                    </div>
+                    <div>
+                        <div class="satisfaction-bar">
+                            <div class="satisfaction-value">6.8</div>
+                        </div>
+                        <div class="satisfaction-label">UI/UX</div>
+                    </div>
+                    <div>
+                        <div class="satisfaction-bar">
+                            <div class="satisfaction-value">6.5</div>
+                        </div>
+                        <div class="satisfaction-label">Performance</div>
+                    </div>
+                    <div>
+                        <div class="satisfaction-bar">
+                            <div class="satisfaction-value">7.9</div>
+                        </div>
+                        <div class="satisfaction-label">Features</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>Feedback Categories</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 2em; color: #007bff;">36%</div>
+                    <div>Gameplay</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2em; color: #28a745;">25%</div>
+                    <div>User Interface</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2em; color: #ffc107;">20%</div>
+                    <div>Political Features</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2em; color: #dc3545;">12%</div>
+                    <div>Performance</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2em; color: #6c757d;">7%</div>
+                    <div>Other</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate real-time updates
+        function updateMetrics() {
+            // In a real implementation, this would fetch from an API
+            console.log('Updating metrics...');
+        }
+
+        // Update every 30 seconds
+        setInterval(updateMetrics, 30000);
+
+        // Initial load
+        updateMetrics();
+    </script>
+</body>
+</html>

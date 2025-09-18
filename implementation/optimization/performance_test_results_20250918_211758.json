@@ -1,0 +1,45 @@
+{
+  "test_timestamp": "2025-09-18T21:17:57.083474",
+  "tests": {
+    "database": {
+      "avg_query_time_ms": 0.2582991123199463,
+      "max_query_time_ms": 0.6053447723388672,
+      "min_query_time_ms": 0.0026226043701171875,
+      "target_ms": 100,
+      "passed": true,
+      "samples": 400
+    },
+    "ai_response": {
+      "avg_response_time_ms": 1.0985875129699707,
+      "max_response_time_ms": 1.1463165283203125,
+      "min_response_time_ms": 1.0213851928710938,
+      "target_ms": 2000,
+      "passed": true,
+      "samples": 100
+    },
+    "memory": {
+      "baseline_memory_gb": 0.01871490478515625,
+      "peak_memory_gb": 0.03226470947265625,
+      "avg_memory_gb": 0.0257171630859375,
+      "final_memory_gb": 0.031352996826171875,
+      "target_gb": 1.0,
+      "passed": true,
+      "samples": 10
+    },
+    "fps": {
+      "avg_fps": 61.98318834618717,
+      "min_fps": 61.81912510317179,
+      "max_fps": 62.24018756770393,
+      "target_fps": 60,
+      "passed": true,
+      "samples": 100
+    }
+  },
+  "summary": {
+    "total_time_seconds": 1.916370153427124,
+    "tests_passed": 4,
+    "tests_total": 4,
+    "success_rate": 1.0,
+    "overall_passed": true
+  }
+}

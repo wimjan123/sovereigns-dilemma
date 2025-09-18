@@ -1,0 +1,66 @@
+# Trivy Container Security Configuration for The Sovereign's Dilemma
+
+# General scanner settings
+format: json
+output: security/reports/trivy-report.json
+cache-dir: /tmp/trivy-cache
+timeout: 10m
+debug: false
+
+# Vulnerability settings
+vuln:
+  type: [os, library]
+  scanners: [vuln, secret, misconfig]
+  severity: [CRITICAL, HIGH, MEDIUM, LOW]
+  ignore-unfixed: false
+  skip-dirs:
+    - node_modules
+    - .git
+    - vendor
+    - Library  # Unity Library folder
+    - Temp     # Unity Temp folder
+    - Logs     # Unity Logs folder
+
+# Secret scanning settings
+secret:
+  config: security/config/trivy-secret-patterns.yml
+
+# Misconfiguration settings
+misconfig:
+  scanners: [azure-arm, cloudformation, dockerfile, helm, kubernetes, terraform]
+  policy: security/policies/trivy-policies
+  include-non-failures: false
+
+# File patterns to scan
+file-patterns:
+  - "**/*.cs"
+  - "**/*.js"
+  - "**/*.ts"
+  - "**/*.json"
+  - "**/*.yml"
+  - "**/*.yaml"
+  - "**/Dockerfile*"
+  - "**/*.sh"
+
+# Ignore patterns
+skip-files:
+  - "**/*.test.*"
+  - "**/*.spec.*"
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/__tests__/**"
+  - "**/node_modules/**"
+  - "**/Assets/Plugins/**"  # Unity plugins
+  - "**/Library/**"         # Unity Library
+  - "**/Temp/**"            # Unity Temp
+
+# Exit code configuration
+exit-code: 1
+exit-on-eol: true
+
+# Suppression settings
+ignorefile: security/config/.trivyignore
+
+# Output configuration
+list-all-pkgs: true
+compliance: security/policies/compliance-spec.yml

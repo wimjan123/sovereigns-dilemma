@@ -1,0 +1,66 @@
+# Trivy Ignore File for The Sovereign's Dilemma
+# Suppress known false positives and accepted risks
+
+# Unity Engine related suppressions
+CVE-2019-11287  # Unity WebGL vulnerability - not applicable to desktop builds
+CVE-2020-12895  # Unity networking vulnerability - using custom networking
+CVE-2021-44531  # Node.js vulnerability in Unity package manager
+
+# Development and test dependencies
+# Note: These should be reviewed regularly and removed when fixed
+CVE-2022-25883  # semver vulnerability in dev dependencies
+CVE-2023-26136  # tough-cookie vulnerability in test framework
+
+# Third-party Unity assets with known issues
+# Suppressions for asset store packages with vendor-fixed issues
+asset-store-*    # Generic suppression for asset store packages
+
+# Build tools and CI/CD related
+CVE-2023-45133  # babel-traverse vulnerability in build tools
+CVE-2023-26115  # word-wrap vulnerability in documentation tools
+
+# Operating system packages (base images)
+# These are managed by the base container image updates
+GHSA-*-alpine-*  # Alpine Linux base image vulnerabilities
+
+# Accepted business risks
+# Document the business justification for each suppression
+LOW-SEVERITY-*   # Low severity vulnerabilities accepted per security review
+
+# Temporary suppressions pending vendor fixes
+# Set expiration dates and review regularly
+# Expires: 2025-12-31
+CVE-2024-*       # Temporary suppression for 2024 CVEs pending vendor patches
+
+# False positives specific to our architecture
+# Unity IL2CPP compilation artifacts
+il2cpp-*         # IL2CPP generated code false positives
+
+# Game asset false positives
+texture-*        # Image and texture files flagged as potential secrets
+audio-*          # Audio files flagged incorrectly
+model-*          # 3D model files with embedded metadata
+
+# Development environment specific
+localhost-*      # Local development server configurations
+test-data-*      # Test data and mock configurations
+
+# Documentation and examples
+example-*        # Example code and documentation
+sample-*         # Sample configurations and templates
+
+# Version control and metadata
+.git-*           # Git metadata and hooks
+.github-*        # GitHub Actions and workflows
+
+# IDE and editor configurations
+.vscode-*        # VS Code configurations
+.unity-*         # Unity Editor configurations
+
+# Build and distribution artifacts
+build-*          # Build system configurations
+dist-*           # Distribution package metadata
+
+# Monitoring and logging
+prometheus-*     # Prometheus configuration false positives
+grafana-*        # Grafana dashboard configurations

@@ -1,0 +1,584 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "The Sovereign's Dilemma - Game Performance",
+    "tags": ["game", "performance", "political-simulation"],
+    "style": "dark",
+    "timezone": "browser",
+    "refresh": "30s",
+    "schemaVersion": 27,
+    "version": 1,
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Game Performance Overview",
+        "type": "stat",
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "game_fps",
+            "refId": "A",
+            "legendFormat": "Current FPS"
+          },
+          {
+            "expr": "game_memory_total_bytes / 1024 / 1024 / 1024",
+            "refId": "B",
+            "legendFormat": "Memory Usage (GB)"
+          },
+          {
+            "expr": "game_active_voters",
+            "refId": "C",
+            "legendFormat": "Active Voters"
+          },
+          {
+            "expr": "rate(ai_requests_total[5m]) * 60",
+            "refId": "D",
+            "legendFormat": "AI Requests/min"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "mappings": [],
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 45},
+                {"color": "green", "value": 60}
+              ]
+            },
+            "unit": "none"
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Memory Usage (GB)"},
+              "properties": [
+                {"id": "unit", "value": "bytes"},
+                {"id": "thresholds", "value": {
+                  "steps": [
+                    {"color": "green", "value": null},
+                    {"color": "yellow", "value": 800000000},
+                    {"color": "red", "value": 1000000000}
+                  ]
+                }}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Frame Rate Performance",
+        "type": "timeseries",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "game_fps",
+            "refId": "A",
+            "legendFormat": "Current FPS"
+          },
+          {
+            "expr": "avg_over_time(game_fps[5m])",
+            "refId": "B",
+            "legendFormat": "5min Average FPS"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "FPS",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "vis": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "line"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "transparent", "value": null},
+                {"color": "red", "value": 30},
+                {"color": "yellow", "value": 45},
+                {"color": "green", "value": 60}
+              ]
+            },
+            "unit": "none",
+            "min": 0,
+            "max": 120
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "multi",
+            "sort": "none"
+          },
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Memory Usage",
+        "type": "timeseries",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "game_memory_total_bytes",
+            "refId": "A",
+            "legendFormat": "Total Memory"
+          },
+          {
+            "expr": "game_memory_unity_reserved_bytes",
+            "refId": "B",
+            "legendFormat": "Unity Reserved"
+          },
+          {
+            "expr": "game_memory_gc_bytes",
+            "refId": "C",
+            "legendFormat": "GC Memory"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "Memory",
+              "axisPlacement": "auto",
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "never",
+              "thresholdsStyle": {
+                "mode": "line"
+              }
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "transparent", "value": null},
+                {"color": "yellow", "value": 800000000},
+                {"color": "red", "value": 1000000000}
+              ]
+            },
+            "unit": "bytes",
+            "min": 0
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Voter Simulation Performance",
+        "type": "timeseries",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 17
+        },
+        "targets": [
+          {
+            "expr": "game_active_voters",
+            "refId": "A",
+            "legendFormat": "Active Voters"
+          },
+          {
+            "expr": "rate(game_voter_updates_total[5m]) * 60",
+            "refId": "B",
+            "legendFormat": "Voter Updates/min"
+          },
+          {
+            "expr": "game_voter_update_duration_seconds * 1000",
+            "refId": "C",
+            "legendFormat": "Update Duration (ms)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "Count / Duration",
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "lineWidth": 2
+            },
+            "unit": "none"
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Update Duration (ms)"},
+              "properties": [
+                {"id": "unit", "value": "ms"},
+                {"id": "custom.axisPlacement", "value": "right"}
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "title": "AI Service Performance",
+        "type": "timeseries",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 17
+        },
+        "targets": [
+          {
+            "expr": "rate(ai_requests_total[5m]) * 60",
+            "refId": "A",
+            "legendFormat": "AI Requests/min"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(ai_request_duration_seconds_bucket[5m]))",
+            "refId": "B",
+            "legendFormat": "95th Percentile Response Time"
+          },
+          {
+            "expr": "ai_circuit_breaker_state",
+            "refId": "C",
+            "legendFormat": "Circuit Breaker State"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "lineWidth": 2
+            },
+            "unit": "none"
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "95th Percentile Response Time"},
+              "properties": [
+                {"id": "unit", "value": "s"},
+                {"id": "custom.axisPlacement", "value": "right"}
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "title": "Political Simulation Metrics",
+        "type": "timeseries",
+        "gridPos": {
+          "h": 9,
+          "w": 24,
+          "x": 0,
+          "y": 26
+        },
+        "targets": [
+          {
+            "expr": "rate(game_political_events_total[5m]) * 60",
+            "refId": "A",
+            "legendFormat": "Political Events/min"
+          },
+          {
+            "expr": "rate(game_voter_opinion_changes_total[5m]) * 60",
+            "refId": "B",
+            "legendFormat": "Opinion Changes/min"
+          },
+          {
+            "expr": "game_political_spectrum_average",
+            "refId": "C",
+            "legendFormat": "Average Political Position"
+          },
+          {
+            "expr": "game_polarization_index",
+            "refId": "D",
+            "legendFormat": "Polarization Index"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "lineWidth": 2
+            },
+            "unit": "none"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "System Health Indicators",
+        "type": "stat",
+        "gridPos": {
+          "h": 6,
+          "w": 24,
+          "x": 0,
+          "y": 35
+        },
+        "targets": [
+          {
+            "expr": "up{job=\"sovereigns-dilemma-game\"}",
+            "refId": "A",
+            "legendFormat": "Game Service"
+          },
+          {
+            "expr": "up{job=\"ai-service\"}",
+            "refId": "B",
+            "legendFormat": "AI Service"
+          },
+          {
+            "expr": "up{job=\"database\"}",
+            "refId": "C",
+            "legendFormat": "Database"
+          },
+          {
+            "expr": "avg_over_time(game_fps[5m]) >= 60",
+            "refId": "D",
+            "legendFormat": "Performance SLO"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {"text": "DOWN", "color": "red"},
+                  "1": {"text": "UP", "color": "green"}
+                },
+                "type": "value"
+              }
+            ],
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "green", "value": 1}
+              ]
+            },
+            "unit": "none"
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 8,
+        "title": "Error Rates",
+        "type": "timeseries",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 41
+        },
+        "targets": [
+          {
+            "expr": "rate(game_errors_total[5m]) * 60",
+            "refId": "A",
+            "legendFormat": "Game Errors/min"
+          },
+          {
+            "expr": "rate(ai_errors_total[5m]) * 60",
+            "refId": "B",
+            "legendFormat": "AI Errors/min"
+          },
+          {
+            "expr": "rate(game_crashes_total[5m]) * 60",
+            "refId": "C",
+            "legendFormat": "Crashes/min"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "lineWidth": 2
+            },
+            "unit": "none",
+            "min": 0
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "User Engagement Metrics",
+        "type": "timeseries",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 41
+        },
+        "targets": [
+          {
+            "expr": "rate(game_posts_created_total[5m]) * 60",
+            "refId": "A",
+            "legendFormat": "Posts Created/min"
+          },
+          {
+            "expr": "rate(game_user_interactions_total[5m]) * 60",
+            "refId": "B",
+            "legendFormat": "User Interactions/min"
+          },
+          {
+            "expr": "avg_over_time(game_session_duration_seconds[1h]) / 60",
+            "refId": "C",
+            "legendFormat": "Avg Session Duration (min)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "lineWidth": 2
+            },
+            "unit": "none",
+            "min": 0
+          }
+        }
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "name": "Deployments",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(prometheus_config_last_reload_success_timestamp_seconds[5m]) > 0",
+          "iconColor": "green",
+          "titleFormat": "Deployment",
+          "textFormat": "System deployment or configuration change"
+        },
+        {
+          "name": "Alerts",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "ALERTS{alertstate=\"firing\"}",
+          "iconColor": "red",
+          "titleFormat": "Alert: {{alertname}}",
+          "textFormat": "{{summary}}"
+        }
+      ]
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "environment",
+          "type": "query",
+          "query": "label_values(up, environment)",
+          "current": {
+            "text": "production",
+            "value": "production"
+          },
+          "options": [],
+          "refresh": 1,
+          "includeAll": false,
+          "multi": false
+        },
+        {
+          "name": "instance",
+          "type": "query",
+          "query": "label_values(up{environment=\"$environment\"}, instance)",
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "options": [],
+          "refresh": 1,
+          "includeAll": true,
+          "multi": true
+        }
+      ]
+    }
+  }
+}

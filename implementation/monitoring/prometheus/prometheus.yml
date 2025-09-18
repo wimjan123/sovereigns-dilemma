@@ -1,0 +1,199 @@
+# Prometheus Configuration for The Sovereign's Dilemma
+# Comprehensive monitoring setup for production deployment
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'sovereigns-dilemma-production'
+    project: 'political-simulation'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Rule files
+rule_files:
+  - "alert_rules/*.yml"
+  - "recording_rules/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Game application metrics
+  - job_name: 'sovereigns-dilemma-game'
+    static_configs:
+      - targets: ['game-server:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+    params:
+      format: ['prometheus']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: game-server:8080
+
+  # Unity Engine metrics
+  - job_name: 'unity-performance'
+    static_configs:
+      - targets: ['game-server:8081']
+    metrics_path: '/unity-metrics'
+    scrape_interval: 5s
+    honor_labels: true
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'unity_.*'
+        target_label: component
+        replacement: 'unity-engine'
+
+  # AI Service metrics (NVIDIA NIM)
+  - job_name: 'ai-service'
+    static_configs:
+      - targets: ['ai-service:8082']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    honor_labels: true
+    basic_auth:
+      username: 'prometheus'
+      password_file: '/etc/prometheus/secrets/ai-service-password'
+
+  # Database metrics
+  - job_name: 'database'
+    static_configs:
+      - targets: ['db-exporter:9187']
+    scrape_interval: 30s
+    honor_labels: true
+
+  # System metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+    honor_labels: true
+
+  # Kubernetes metrics
+  - job_name: 'kubernetes-apiservers'
+    kubernetes_sd_configs:
+      - role: endpoints
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+
+  - job_name: 'kubernetes-nodes'
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+
+  # Load balancer metrics
+  - job_name: 'nginx-ingress'
+    static_configs:
+      - targets: ['nginx-ingress:10254']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # CDN metrics (if using Cloudflare or similar)
+  - job_name: 'cdn-metrics'
+    static_configs:
+      - targets: ['cdn-exporter:8083']
+    scrape_interval: 60s
+    honor_labels: true
+
+  # Steam metrics (custom exporter for Steam stats)
+  - job_name: 'steam-metrics'
+    static_configs:
+      - targets: ['steam-exporter:8084']
+    scrape_interval: 300s  # 5 minutes
+    honor_labels: true
+    params:
+      app_id: ['${STEAM_APP_ID}']
+
+  # itch.io metrics
+  - job_name: 'itch-metrics'
+    static_configs:
+      - targets: ['itch-exporter:8085']
+    scrape_interval: 300s  # 5 minutes
+    honor_labels: true
+
+  # Business metrics (custom game analytics)
+  - job_name: 'game-analytics'
+    static_configs:
+      - targets: ['analytics-service:8086']
+    metrics_path: '/metrics'
+    scrape_interval: 60s
+    honor_labels: true
+
+  # Security monitoring
+  - job_name: 'security-metrics'
+    static_configs:
+      - targets: ['security-exporter:8087']
+    scrape_interval: 30s
+    honor_labels: true
+
+# Remote write configuration for long-term storage
+remote_write:
+  - url: 'https://prometheus-remote-storage.sovereignsdilemma.com/api/v1/write'
+    basic_auth:
+      username: 'prometheus'
+      password_file: '/etc/prometheus/secrets/remote-storage-password'
+    queue_config:
+      max_samples_per_send: 1000
+      max_shards: 200
+      capacity: 2500
+
+# Remote read configuration
+remote_read:
+  - url: 'https://prometheus-remote-storage.sovereignsdilemma.com/api/v1/read'
+    basic_auth:
+      username: 'prometheus'
+      password_file: '/etc/prometheus/secrets/remote-storage-password'

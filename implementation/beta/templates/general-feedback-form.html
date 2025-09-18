@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Feedback - The Sovereign's Dilemma Beta</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #28a745;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        .rating-scale {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .rating-scale input {
+            width: auto;
+        }
+        .submit-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+        .required {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 General Feedback</h1>
+        <p>Share your overall experience with The Sovereign's Dilemma beta. Your insights help us improve every aspect of the game.</p>
+
+        <form id="generalFeedbackForm">
+            <div class="form-group">
+                <label for="overallRating">Overall Game Rating <span class="required">*</span></label>
+                <div class="rating-scale">
+                    <span>Poor</span>
+                    <input type="range" id="overallRating" name="overallRating" min="1" max="10" value="5" required>
+                    <span>Excellent</span>
+                    <span id="overallRatingValue">5</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="gameplayRating">Gameplay Experience</label>
+                <div class="rating-scale">
+                    <span>Poor</span>
+                    <input type="range" id="gameplayRating" name="gameplayRating" min="1" max="10" value="5">
+                    <span>Excellent</span>
+                    <span id="gameplayRatingValue">5</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="politicalAccuracy">Political Accuracy</label>
+                <div class="rating-scale">
+                    <span>Inaccurate</span>
+                    <input type="range" id="politicalAccuracy" name="politicalAccuracy" min="1" max="10" value="5">
+                    <span>Very Accurate</span>
+                    <span id="politicalAccuracyValue">5</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="uiRating">User Interface</label>
+                <div class="rating-scale">
+                    <span>Confusing</span>
+                    <input type="range" id="uiRating" name="uiRating" min="1" max="10" value="5">
+                    <span>Intuitive</span>
+                    <span id="uiRatingValue">5</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="performanceRating">Performance</label>
+                <div class="rating-scale">
+                    <span>Poor</span>
+                    <input type="range" id="performanceRating" name="performanceRating" min="1" max="10" value="5">
+                    <span>Excellent</span>
+                    <span id="performanceRatingValue">5</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="mostEnjoyed">What did you enjoy most?</label>
+                <textarea id="mostEnjoyed" name="mostEnjoyed" placeholder="Tell us about your favorite aspects of the game..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="leastEnjoyed">What did you enjoy least?</label>
+                <textarea id="leastEnjoyed" name="leastEnjoyed" placeholder="What aspects could be improved?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="learningExperience">Educational Value</label>
+                <textarea id="learningExperience" name="learningExperience" placeholder="Did you learn anything about Dutch politics? Was it engaging as an educational experience?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="recommendations">Would you recommend this game?</label>
+                <select id="recommendations" name="recommendations">
+                    <option value="">Select answer</option>
+                    <option value="definitely">Definitely yes</option>
+                    <option value="probably">Probably yes</option>
+                    <option value="maybe">Maybe</option>
+                    <option value="probably-not">Probably not</option>
+                    <option value="definitely-not">Definitely not</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="improvements">Suggestions for Improvement</label>
+                <textarea id="improvements" name="improvements" placeholder="What specific changes would make this game better?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="additionalComments">Additional Comments</label>
+                <textarea id="additionalComments" name="additionalComments" placeholder="Any other thoughts or feedback?"></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">Submit Feedback</button>
+        </form>
+    </div>
+
+    <script>
+        // Update rating displays
+        document.getElementById('overallRating').addEventListener('input', function() {
+            document.getElementById('overallRatingValue').textContent = this.value;
+        });
+        document.getElementById('gameplayRating').addEventListener('input', function() {
+            document.getElementById('gameplayRatingValue').textContent = this.value;
+        });
+        document.getElementById('politicalAccuracy').addEventListener('input', function() {
+            document.getElementById('politicalAccuracyValue').textContent = this.value;
+        });
+        document.getElementById('uiRating').addEventListener('input', function() {
+            document.getElementById('uiRatingValue').textContent = this.value;
+        });
+        document.getElementById('performanceRating').addEventListener('input', function() {
+            document.getElementById('performanceRatingValue').textContent = this.value;
+        });
+
+        document.getElementById('generalFeedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Collect form data
+            const formData = new FormData(this);
+            const feedback = Object.fromEntries(formData);
+
+            // Add metadata
+            feedback.timestamp = new Date().toISOString();
+            feedback.type = 'general_feedback';
+            feedback.id = 'feedback_' + Date.now();
+
+            // In a real implementation, this would submit to a server
+            console.log('General Feedback:', feedback);
+            alert('Feedback submitted successfully! Thank you for sharing your experience.');
+
+            // Reset form
+            this.reset();
+
+            // Reset rating displays
+            document.getElementById('overallRatingValue').textContent = '5';
+            document.getElementById('gameplayRatingValue').textContent = '5';
+            document.getElementById('politicalAccuracyValue').textContent = '5';
+            document.getElementById('uiRatingValue').textContent = '5';
+            document.getElementById('performanceRatingValue').textContent = '5';
+        });
+    </script>
+</body>
+</html>

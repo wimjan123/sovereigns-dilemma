@@ -1,0 +1,167 @@
+# Semgrep Security Rules Configuration for The Sovereign's Dilemma
+# Custom security rules for Unity C# and JavaScript code
+
+rules:
+  # C# Unity Security Rules
+  - id: unity-playerprefs-security
+    patterns:
+      - pattern: PlayerPrefs.SetString($KEY, $VALUE)
+      - pattern-where:
+          metavariable: $KEY
+          regex: (?i)(password|token|key|secret|credential)
+    message: "Sensitive data should not be stored in PlayerPrefs without encryption"
+    languages: [csharp]
+    severity: WARNING
+    metadata:
+      category: security
+      subcategory: [data-storage]
+      impact: MEDIUM
+      likelihood: HIGH
+
+  - id: unity-log-sensitive-data
+    patterns:
+      - pattern: Debug.Log($ARG)
+      - pattern-where:
+          metavariable: $ARG
+          regex: (?i)(password|token|api_?key|secret|credential)
+    message: "Sensitive data should not be logged"
+    languages: [csharp]
+    severity: ERROR
+    metadata:
+      category: security
+      subcategory: [information-disclosure]
+
+  - id: unity-insecure-random
+    patterns:
+      - pattern: new Random()
+      - pattern: Random.Range($MIN, $MAX)
+    message: "Use cryptographically secure random for security-sensitive operations"
+    languages: [csharp]
+    severity: INFO
+    metadata:
+      category: security
+      subcategory: [cryptography]
+
+  - id: sql-injection-risk
+    patterns:
+      - pattern: $CMD.CommandText = $STR + $VAR
+      - pattern: $CMD.CommandText = string.Format($FORMAT, ...)
+    message: "Potential SQL injection vulnerability - use parameterized queries"
+    languages: [csharp]
+    severity: ERROR
+    metadata:
+      category: security
+      subcategory: [injection]
+
+  # JavaScript/TypeScript Security Rules
+  - id: js-eval-usage
+    patterns:
+      - pattern: eval($ARG)
+    message: "eval() usage detected - potential code injection vulnerability"
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      subcategory: [injection]
+
+  - id: js-innerHTML-xss
+    patterns:
+      - pattern: $EL.innerHTML = $VAR
+      - pattern-not: $EL.innerHTML = "..."
+    message: "Potential XSS vulnerability - validate and sanitize input"
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      subcategory: [xss]
+
+  - id: js-weak-crypto
+    patterns:
+      - pattern: Math.random()
+    message: "Math.random() is not cryptographically secure"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: security
+      subcategory: [cryptography]
+
+  # AI Service Security Rules
+  - id: ai-api-key-hardcode
+    patterns:
+      - pattern: $VAR = "sk-..."
+      - pattern: $VAR = "nvapi-..."
+      - pattern: apiKey = "..."
+    message: "API key appears to be hardcoded - use environment variables"
+    languages: [csharp, javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      subcategory: [secrets]
+
+  - id: ai-prompt-injection
+    patterns:
+      - pattern: $PROMPT + $USER_INPUT
+      - pattern: string.Format($TEMPLATE, $USER_INPUT)
+      - pattern-inside: |
+          class $CLASS {
+            ...
+            $METHOD(...) {
+              ...
+            }
+          }
+    message: "Potential prompt injection - validate and sanitize user input"
+    languages: [csharp]
+    severity: WARNING
+    metadata:
+      category: security
+      subcategory: [injection]
+
+  # GDPR Compliance Rules
+  - id: personal-data-logging
+    patterns:
+      - pattern: Debug.Log($EMAIL)
+      - pattern: Console.WriteLine($EMAIL)
+      - pattern-where:
+          metavariable: $EMAIL
+          regex: .*@.*\\..*
+    message: "Personal data (email) should not be logged without consent"
+    languages: [csharp]
+    severity: WARNING
+    metadata:
+      category: privacy
+      subcategory: [gdpr]
+
+  - id: ip-address-storage
+    patterns:
+      - pattern: $VAR = Request.UserHostAddress
+      - pattern: $VAR = HttpContext.Connection.RemoteIpAddress
+    message: "IP address collection requires GDPR compliance measures"
+    languages: [csharp]
+    severity: INFO
+    metadata:
+      category: privacy
+      subcategory: [gdpr]
+
+  # Configuration Security
+  - id: debug-mode-production
+    patterns:
+      - pattern: Debug.isDebugBuild
+      - pattern: Application.isEditor
+    message: "Debug checks detected - ensure disabled in production builds"
+    languages: [csharp]
+    severity: INFO
+    metadata:
+      category: security
+      subcategory: [configuration]
+
+  - id: insecure-transport
+    patterns:
+      - pattern: http://$URL
+      - pattern-not: http://localhost
+      - pattern-not: http://127.0.0.1
+    message: "Insecure HTTP protocol detected - use HTTPS in production"
+    languages: [csharp, javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      subcategory: [transport]

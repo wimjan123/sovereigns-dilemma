@@ -1,0 +1,61 @@
+{
+  "aiOptimization": {
+    "nvidia_nim": {
+      "requestBatching": {
+        "enabled": true,
+        "batchInterval": 100,
+        "maxBatchSize": 50,
+        "timeoutMs": 5000
+      },
+      "caching": {
+        "enabled": true,
+        "cacheSize": 10000,
+        "ttlSeconds": 3600,
+        "hitRateTarget": 0.7
+      },
+      "circuitBreaker": {
+        "enabled": true,
+        "failureThreshold": 5,
+        "recoveryTimeoutMs": 30000,
+        "requestVolumeThreshold": 10
+      },
+      "connectionPooling": {
+        "maxConnections": 20,
+        "connectionTimeoutMs": 5000,
+        "keepAliveMs": 30000
+      }
+    },
+    "localAI": {
+      "modelOptimization": {
+        "quantization": true,
+        "pruning": true,
+        "compression": "gzip",
+        "batchInference": true
+      },
+      "inference": {
+        "gpuAcceleration": "auto",
+        "cpuOptimization": true,
+        "asyncProcessing": true,
+        "maxConcurrentRequests": 10
+      },
+      "memory": {
+        "modelSharing": true,
+        "lazyLoading": true,
+        "memoryMapping": true,
+        "tensorOptimization": true
+      }
+    },
+    "fallback": {
+      "enabled": true,
+      "templateResponses": true,
+      "cachedResponsePriority": true,
+      "localModelFallback": true
+    }
+  },
+  "performanceTargets": {
+    "responseTimeMs": 2000,
+    "batchThroughput": 100,
+    "cacheHitRate": 0.7,
+    "errorRate": 0.05
+  }
+}

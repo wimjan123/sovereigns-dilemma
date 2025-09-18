@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bug Report - The Sovereign's Dilemma Beta</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #dc3545;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        .severity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        .severity-option {
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .severity-option:hover {
+            border-color: #007bff;
+        }
+        .severity-option input {
+            width: auto;
+            margin-bottom: 5px;
+        }
+        .critical { border-color: #dc3545; background-color: #f8d7da; }
+        .high { border-color: #fd7e14; background-color: #fdf2e9; }
+        .medium { border-color: #ffc107; background-color: #fff9c4; }
+        .low { border-color: #28a745; background-color: #d4edda; }
+        .submit-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .submit-btn:hover {
+            background-color: #c82333;
+        }
+        .required {
+            color: #dc3545;
+        }
+        .file-upload {
+            border: 2px dashed #ced4da;
+            padding: 20px;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐛 Bug Report</h1>
+        <p>Help us improve The Sovereign's Dilemma by reporting bugs and issues you encounter during beta testing.</p>
+
+        <form id="bugReportForm">
+            <div class="form-group">
+                <label for="bugTitle">Bug Title <span class="required">*</span></label>
+                <input type="text" id="bugTitle" name="bugTitle" placeholder="Brief description of the issue" required>
+            </div>
+
+            <div class="form-group">
+                <label>Severity Level <span class="required">*</span></label>
+                <div class="severity-grid">
+                    <div class="severity-option critical">
+                        <input type="radio" name="severity" value="critical" id="sev-critical" required>
+                        <label for="sev-critical">Critical</label>
+                        <small>Game crashes, data loss</small>
+                    </div>
+                    <div class="severity-option high">
+                        <input type="radio" name="severity" value="high" id="sev-high">
+                        <label for="sev-high">High</label>
+                        <small>Major features broken</small>
+                    </div>
+                    <div class="severity-option medium">
+                        <input type="radio" name="severity" value="medium" id="sev-medium">
+                        <label for="sev-medium">Medium</label>
+                        <small>Noticeable issues</small>
+                    </div>
+                    <div class="severity-option low">
+                        <input type="radio" name="severity" value="low" id="sev-low">
+                        <label for="sev-low">Low</label>
+                        <small>Minor cosmetic issues</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reproduction">Steps to Reproduce <span class="required">*</span></label>
+                <textarea id="reproduction" name="reproduction" placeholder="1. Go to...&#10;2. Click on...&#10;3. Expected: ...&#10;4. Actual: ..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="expectedBehavior">Expected Behavior</label>
+                <textarea id="expectedBehavior" name="expectedBehavior" placeholder="What should have happened?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="actualBehavior">Actual Behavior</label>
+                <textarea id="actualBehavior" name="actualBehavior" placeholder="What actually happened?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="gameVersion">Game Version <span class="required">*</span></label>
+                <input type="text" id="gameVersion" name="gameVersion" placeholder="e.g., Beta-2025.09.18-14.30" required>
+            </div>
+
+            <div class="form-group">
+                <label for="systemInfo">System Information</label>
+                <textarea id="systemInfo" name="systemInfo" placeholder="OS, GPU, RAM, etc."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="additionalInfo">Additional Information</label>
+                <textarea id="additionalInfo" name="additionalInfo" placeholder="Any other relevant details..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="attachments">Screenshots/Videos</label>
+                <div class="file-upload">
+                    <input type="file" id="attachments" name="attachments" multiple accept="image/*,video/*">
+                    <p>Drag and drop files here or click to browse</p>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Submit Bug Report</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('bugReportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Collect form data
+            const formData = new FormData(this);
+            const bugReport = Object.fromEntries(formData);
+
+            // Add metadata
+            bugReport.timestamp = new Date().toISOString();
+            bugReport.type = 'bug_report';
+            bugReport.id = 'bug_' + Date.now();
+
+            // In a real implementation, this would submit to a server
+            console.log('Bug Report:', bugReport);
+            alert('Bug report submitted successfully! Thank you for helping improve the game.');
+
+            // Reset form
+            this.reset();
+        });
+    </script>
+</body>
+</html>

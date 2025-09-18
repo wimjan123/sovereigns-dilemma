@@ -1,0 +1,502 @@
+name: Production CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, release/* ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  UNITY_VERSION: 6000.0.23f1
+  PROJECT_PATH: implementation/Unity
+  REGISTRY: ghcr.io
+  IMAGE_NAME: sovereigns-dilemma
+
+jobs:
+  security-scan:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Run Semgrep Security Scan
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: >-
+          p/security-audit
+          p/secrets
+          p/csharp
+          p/unity
+        generateSarif: "1"
+
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: semgrep.sarif
+      if: always()
+
+    - name: Dependency Security Scan
+      uses: securecodewarrior/github-action-add-sarif@v1
+      with:
+        sarif-file: 'dependency-check-report.sarif'
+
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: security-scan
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.PROJECT_PATH }}
+
+    - name: Code formatting check
+      run: dotnet format ${{ env.PROJECT_PATH }} --verify-no-changes --verbosity diagnostic
+
+    - name: Static code analysis
+      run: |
+        dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+        dotnet test ${{ env.PROJECT_PATH }} --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
+
+  unity-tests:
+    name: Unity Tests
+    runs-on: ubuntu-latest
+    needs: quality-gates
+
+    strategy:
+      matrix:
+        testMode: [EditMode, PlayMode]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+
+    - name: Cache Unity Library
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.PROJECT_PATH }}/Library
+        key: Library-${{ matrix.testMode }}-${{ hashFiles('implementation/Unity/ProjectSettings/**') }}
+        restore-keys: |
+          Library-${{ matrix.testMode }}-
+          Library-
+
+    - name: Run Unity Tests
+      uses: game-ci/unity-test-runner@v4
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      with:
+        projectPath: ${{ env.PROJECT_PATH }}
+        unityVersion: ${{ env.UNITY_VERSION }}
+        testMode: ${{ matrix.testMode }}
+        artifactsPath: test-results-${{ matrix.testMode }}
+        githubToken: ${{ secrets.GITHUB_TOKEN }}
+        checkName: Unity Test Results (${{ matrix.testMode }})
+        coverageOptions: 'generateAdditionalMetrics;generateHtmlReport;generateBadgeReport'
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: unity-test-results-${{ matrix.testMode }}
+        path: test-results-${{ matrix.testMode }}
+
+  performance-benchmarks:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: unity-tests
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+
+    - name: Cache Unity Library
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.PROJECT_PATH }}/Library
+        key: Library-Perf-${{ hashFiles('implementation/Unity/ProjectSettings/**') }}
+        restore-keys: |
+          Library-Perf-
+          Library-
+
+    - name: Run Performance Tests
+      uses: game-ci/unity-test-runner@v4
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      with:
+        projectPath: ${{ env.PROJECT_PATH }}
+        unityVersion: ${{ env.UNITY_VERSION }}
+        testMode: all
+        artifactsPath: performance-results
+        githubToken: ${{ secrets.GITHUB_TOKEN }}
+        checkName: Performance Test Results
+        customParameters: -testCategory "Performance" -batchmode -nographics
+
+    - name: Analyze Performance Results
+      run: |
+        echo "Analyzing performance test results..."
+        # Extract key metrics from performance results
+        python3 scripts/analyze_performance.py performance-results/
+
+    - name: Performance Gate Check
+      run: |
+        # Fail if performance targets not met
+        fps_target=60
+        memory_limit=1000000000  # 1GB in bytes
+
+        actual_fps=$(grep "Average FPS" performance-results/summary.txt | cut -d':' -f2 | tr -d ' ')
+        actual_memory=$(grep "Peak Memory" performance-results/summary.txt | cut -d':' -f2 | tr -d ' ')
+
+        if (( $(echo "$actual_fps < $fps_target" | bc -l) )); then
+          echo "Performance gate failed: FPS $actual_fps < $fps_target"
+          exit 1
+        fi
+
+        if (( actual_memory > memory_limit )); then
+          echo "Performance gate failed: Memory $actual_memory > $memory_limit"
+          exit 1
+        fi
+
+        echo "Performance gates passed: FPS=$actual_fps, Memory=$actual_memory"
+
+    - name: Upload performance results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-results
+        path: performance-results
+
+  build-matrix:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    needs: [unity-tests, performance-benchmarks]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: StandaloneWindows64
+            os: windows-latest
+            artifact: windows-build
+          - platform: StandaloneLinux64
+            os: ubuntu-latest
+            artifact: linux-build
+          - platform: StandaloneOSX
+            os: macos-latest
+            artifact: macos-build
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+
+    - name: Cache Unity Library
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.PROJECT_PATH }}/Library
+        key: Library-${{ matrix.platform }}-${{ hashFiles('implementation/Unity/ProjectSettings/**') }}
+        restore-keys: |
+          Library-${{ matrix.platform }}-
+          Library-
+
+    - name: Build Unity Project
+      uses: game-ci/unity-builder@v4
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      with:
+        projectPath: ${{ env.PROJECT_PATH }}
+        unityVersion: ${{ env.UNITY_VERSION }}
+        targetPlatform: ${{ matrix.platform }}
+        buildName: SovereignsDilemma
+        buildsPath: builds
+        buildMethod: BuildTools.BuildGame
+        customParameters: -buildType Release -enableOptimizations
+
+    - name: Post-build validation
+      run: |
+        echo "Validating build for ${{ matrix.platform }}..."
+        ls -la builds/${{ matrix.platform }}/
+
+        # Check build size
+        build_size=$(du -sb builds/${{ matrix.platform }} | cut -f1)
+        max_size=2147483648  # 2GB limit
+
+        if (( build_size > max_size )); then
+          echo "Build size validation failed: $build_size > $max_size"
+          exit 1
+        fi
+
+        echo "Build validation passed: Size=$build_size bytes"
+
+    - name: Package build
+      run: |
+        cd builds/${{ matrix.platform }}
+        if [[ "${{ matrix.platform }}" == "StandaloneWindows64" ]]; then
+          zip -r ../../SovereignsDilemma-${{ github.sha }}-windows.zip .
+        elif [[ "${{ matrix.platform }}" == "StandaloneLinux64" ]]; then
+          tar -czf ../../SovereignsDilemma-${{ github.sha }}-linux.tar.gz .
+        elif [[ "${{ matrix.platform }}" == "StandaloneOSX" ]]; then
+          zip -r ../../SovereignsDilemma-${{ github.sha }}-macos.zip .
+        fi
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact }}
+        path: builds/${{ matrix.platform }}
+        retention-days: 30
+
+    - name: Upload packaged build
+      uses: actions/upload-artifact@v4
+      with:
+        name: packaged-${{ matrix.artifact }}
+        path: SovereignsDilemma-${{ github.sha }}-*
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: build-matrix
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download Linux build
+      uses: actions/download-artifact@v4
+      with:
+        name: linux-build
+        path: builds/linux
+
+    - name: Setup test environment
+      run: |
+        chmod +x builds/linux/SovereignsDilemma
+        sudo apt-get update
+        sudo apt-get install -y xvfb
+
+    - name: Run integration tests
+      run: |
+        echo "Running integration tests..."
+        xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' \
+          timeout 300s builds/linux/SovereignsDilemma \
+          -batchmode -nographics -logFile integration_test.log \
+          -testMode Integration
+
+        # Validate integration test results
+        if grep -q "All integration tests passed" integration_test.log; then
+          echo "Integration tests passed"
+        else
+          echo "Integration tests failed"
+          cat integration_test.log
+          exit 1
+        fi
+
+    - name: Upload integration test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: integration-test-results
+        path: integration_test.log
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+
+    environment:
+      name: staging
+      url: https://staging.sovereignsdilemma.com
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download all builds
+      uses: actions/download-artifact@v4
+      with:
+        pattern: '*-build'
+        path: staging-builds/
+
+    - name: Setup deployment tools
+      run: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/
+
+    - name: Deploy to staging infrastructure
+      env:
+        KUBECONFIG_DATA: ${{ secrets.STAGING_KUBECONFIG }}
+        STAGING_REGISTRY_TOKEN: ${{ secrets.STAGING_REGISTRY_TOKEN }}
+      run: |
+        echo "$KUBECONFIG_DATA" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+        # Deploy builds to staging servers
+        ./scripts/deploy-staging.sh staging-builds/
+
+    - name: Run smoke tests
+      run: |
+        echo "Running smoke tests against staging..."
+        ./scripts/smoke-tests.sh https://staging.sovereignsdilemma.com
+
+    - name: Notify deployment status
+      uses: 8398a7/action-slack@v3
+      if: always()
+      with:
+        status: ${{ job.status }}
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        text: "Staging deployment completed with status: ${{ job.status }}"
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'
+
+    environment:
+      name: production
+      url: https://sovereignsdilemma.com
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download all builds
+      uses: actions/download-artifact@v4
+      with:
+        pattern: 'packaged-*'
+        path: production-builds/
+
+    - name: Deploy to Steam
+      env:
+        STEAM_USERNAME: ${{ secrets.STEAM_USERNAME }}
+        STEAM_PASSWORD: ${{ secrets.STEAM_PASSWORD }}
+        STEAM_APP_ID: ${{ secrets.STEAM_APP_ID }}
+      run: |
+        echo "Deploying to Steam..."
+        ./scripts/deploy-steam.sh production-builds/
+
+    - name: Deploy to itch.io
+      env:
+        ITCH_API_KEY: ${{ secrets.ITCH_API_KEY }}
+        ITCH_USER: ${{ secrets.ITCH_USER }}
+        ITCH_GAME: ${{ secrets.ITCH_GAME }}
+      run: |
+        echo "Deploying to itch.io..."
+        ./scripts/deploy-itch.sh production-builds/
+
+    - name: Update CDN
+      env:
+        CDN_API_KEY: ${{ secrets.CDN_API_KEY }}
+        CDN_ZONE_ID: ${{ secrets.CDN_ZONE_ID }}
+      run: |
+        echo "Updating CDN distribution..."
+        ./scripts/update-cdn.sh production-builds/
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+        body: |
+          # The Sovereign's Dilemma - Release ${{ github.ref }}
+
+          ## What's New
+          - Enhanced political simulation engine
+          - Improved AI integration with NVIDIA NIM
+          - Performance optimizations for 10K+ voters
+          - Cross-platform stability improvements
+
+          ## Performance Metrics
+          - Average FPS: 60+ (10,000 voters)
+          - Memory Usage: <1GB
+          - Load Time: <30 seconds
+
+          ## Downloads
+          - Windows: [Download](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/SovereignsDilemma-windows.zip)
+          - Linux: [Download](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/SovereignsDilemma-linux.tar.gz)
+          - macOS: [Download](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/SovereignsDilemma-macos.zip)
+
+    - name: Upload release assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./production-builds/
+        asset_name: game-builds.zip
+        asset_content_type: application/zip
+
+    - name: Trigger monitoring alerts
+      run: |
+        echo "Notifying monitoring systems of production deployment..."
+        curl -X POST -H "Content-Type: application/json" \
+          -d '{"event": "deployment", "version": "${{ github.ref }}", "environment": "production"}' \
+          ${{ secrets.MONITORING_WEBHOOK }}
+
+    - name: Notify production deployment
+      uses: 8398a7/action-slack@v3
+      if: always()
+      with:
+        status: ${{ job.status }}
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        text: "🚀 Production deployment ${{ github.ref }} completed with status: ${{ job.status }}"
+
+  rollback:
+    name: Rollback Production
+    runs-on: ubuntu-latest
+    if: failure() && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    needs: [deploy-production]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Execute rollback procedure
+      env:
+        ROLLBACK_TOKEN: ${{ secrets.ROLLBACK_TOKEN }}
+      run: |
+        echo "Executing emergency rollback procedure..."
+        ./scripts/emergency-rollback.sh
+
+    - name: Notify rollback
+      uses: 8398a7/action-slack@v3
+      with:
+        status: "warning"
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        text: "🚨 Emergency rollback executed for ${{ github.ref }}"

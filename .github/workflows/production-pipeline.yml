@@ -42,9 +42,18 @@ jobs:
       if: always()
 
     - name: Dependency Security Scan
-      uses: securecodewarrior/github-action-add-sarif@v1
+      run: |
+        echo "Running dependency security scan..."
+        # Install and run dependency-check
+        wget -O dependency-check.zip https://github.com/jeremylong/DependencyCheck/releases/download/v8.4.0/dependency-check-8.4.0-release.zip
+        unzip dependency-check.zip
+        ./dependency-check/bin/dependency-check.sh --project "Sovereigns Dilemma" --scan implementation/ --format SARIF --out dependency-check-report.sarif || true
+
+    - name: Upload Dependency Check Results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always() && hashFiles('dependency-check-report.sarif') != ''
       with:
-        sarif-file: 'dependency-check-report.sarif'
+        sarif_file: dependency-check-report.sarif
 
   quality-gates:
     name: Quality Gates
@@ -425,12 +434,12 @@ jobs:
         ./scripts/update-cdn.sh production-builds/
 
     - name: Create GitHub Release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        name: Release ${{ github.ref }}
         draft: false
         prerelease: false
         body: |
@@ -453,14 +462,11 @@ jobs:
           - macOS: [Download](https://github.com/${{ github.repository }}/releases/download/${{ github.ref }}/SovereignsDilemma-macos.zip)
 
     - name: Upload release assets
-      uses: actions/upload-release-asset@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./production-builds/
-        asset_name: game-builds.zip
-        asset_content_type: application/zip
+        files: ./production-builds/*
 
     - name: Trigger monitoring alerts
       run: |
